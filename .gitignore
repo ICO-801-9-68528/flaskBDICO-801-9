@@ -1,2 +1,8 @@
 .env
 node_modules
+migrations
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd

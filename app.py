@@ -1,6 +1,7 @@
 from flask import Flask, render_template,request, redirect, url_for
 from flask import flash
 from flask_wtf.csrf import CSRFProtect
+from flask_migrate import Migrate 
 from config import DevelopmentConfig
 import forms
 
@@ -9,6 +10,7 @@ from models import db, Alumnos, Maestros
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 db.init_app(app)
+migrate = Migrate(app, db)
 csrf = CSRFProtect(app)
 
 
@@ -44,18 +46,40 @@ def usuario():
 @app.route("/maestros", methods=["GET","POST"])
 def maestros():
     create_maestro=forms.MaestroForm(request.form)
+    alumno=Alumnos.query.all()
     maestro=Maestros.query.all()
     
-    if request.method=='POST':
-        mat=create_maestro.matricula.data
-        nom=create_maestro.nombre.data
-        apa=create_maestro.apellidos.data
-        esp=create_maestro.especialidad.data
-        email=create_maestro.email.data
+    if request.method=='POST' and create_maestro.validate():
+        try:
+            nuevo_maestro = Maestros(
+                matricula=create_maestro.matricula.data, 
+                nombre=create_maestro.nombre.data, 
+                apellidos=create_maestro.apellidos.data, 
+                especialidad=create_maestro.especialidad.data, 
+                email=create_maestro.email.data
+            )
+            db.session.add(nuevo_maestro)
+            db.session.commit()
+            flash('Maestro agregado exitosamente')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error al agregar maestro: {str(e)}')
     
-    return render_template("maestros.html", form=create_maestro, maestro=maestro)
+    return render_template("index.html", form=create_maestro, maestro=maestro, alumno=alumno)
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        
+        # Agregar maestros de ejemplo si la tabla está vacía
+        if Maestros.query.count() == 0:
+            maestros_ejemplo = [
+                Maestros(matricula=1001, nombre='Carlos', apellidos='García López', especialidad='Matemáticas', email='carlos.garcia@school.com'),
+                Maestros(matricula=1002, nombre='María', apellidos='Rodríguez Pérez', especialidad='Física', email='maria.rodriguez@school.com'),
+                Maestros(matricula=1003, nombre='Juan', apellidos='Martínez Silva', especialidad='Química', email='juan.martinez@school.com'),
+            ]
+            for mae in maestros_ejemplo:
+                db.session.add(mae)
+            db.session.commit()
+    
     app.run()
