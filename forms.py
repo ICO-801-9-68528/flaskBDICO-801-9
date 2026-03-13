@@ -10,3 +10,10 @@ class UserForm(Form):
     amaterno=StringField('Amaterno')
     edad=IntegerField("Edad")
     correo=EmailField('Correo')
+
+class MaestroForm(Form):
+    matricula=IntegerField("Matricula")
+    nombre=StringField('Nombre')
+    apellidos=StringField('Apellidos')
+    especialidad=StringField('Especialidad')
+    email=EmailField('Email')
