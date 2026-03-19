@@ -1,0 +1,12 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<h2>Cursos de {{ alumno.nombre }}</h2>
+
+<ul>
+{% for c in cursos %}
+    <li>{{ c.nombre }}</li>
+{% endfor %}
+</ul>
+
+{% endblock %}
