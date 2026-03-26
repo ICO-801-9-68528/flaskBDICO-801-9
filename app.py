@@ -1,61 +1,108 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for
+from flask import flash
 from flask_wtf.csrf import CSRFProtect
-from flask_migrate import Migrate 
 from config import DevelopmentConfig
+from flask import g
+from flask_migrate import Migrate
+from maestros.routes import maestros_bp
+
+from models import db, Alumnos
 import forms
-
-from models import db, Alumnos, Maestros, Curso  # 👈 agregamos Curso
-
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
+app.register_blueprint(maestros_bp)
 
 db.init_app(app)
-migrate = Migrate(app, db)
-csrf = CSRFProtect(app)
+csrf=CSRFProtect()
+migrate=Migrate(app, db)
 
 
-# ❌ ELIMINAMOS "/" como principal
+
+@app.route("/",methods=["GET","POST"])
 @app.route("/index")
 def index():
-    create_alumno = forms.UserForm(request.form)
-    alumno = Alumnos.query.all()
-    maestro = Maestros.query.all()
-    return render_template("index.html", form=create_alumno, alumno=alumno, maestro=maestro)
+    create_alumno=forms.UserForm(request.form)
+    #select * alumnos alumnos
+    alumno=Alumnos.query.all()
+    return render_template("index.html", form=create_alumno, alumno=alumno)
 
+@app.route("/Alumnos",methods=['GET','POST'])
+def alumnos():
+    create_form=forms.UserForm(request.form)
+    if request.method=='POST':
+        alum=Alumnos(nombre=create_form.nombre.data,
+                     apaterno=create_form.apaterno.data,
+                     amaterno=create_form.amaterno.data,
+                     edad=create_form.edad.data,
+                     correo=create_form.correo.data)
+        db.session.add(alum)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_template("Alumnos.html",form=create_form)
 
-# -------------------------------
-# 🔹 FORMULARIO USUARIOS
-# -------------------------------
-@app.route("/usuarios", methods=["GET","POST"])
-def usuario():
-    mat=0
-    nom=''
-    apa=''
-    ama=''
-    edad=0
-    email=''
+@app.route("/modificar",methods=['GET','POST'])
+def modificar():
+    create_form=forms.UserForm(request.form)
+    if request.method=='GET':
+         id=request.args.get('id')
+         #  select * from alumnos where id == id
+         alum1 = db.session.query(Alumnos).filter(Alumnos.id==id).first()
+         create_form.id.data=request.args.get('id')
+         create_form.nombre.data=alum1.nombre
+         create_form.apaterno.data=alum1.apaterno
+         create_form.amaterno.data=alum1.amaterno
+         create_form.edad.data=alum1.edad
+         create_form.correo.data=alum1.correo
+    
+    if request.method=='POST':
+        id=request.args.get('id')
+        alum1 = db.session.query(Alumnos).filter(Alumnos.id==id).first()
+        alum1.id=id
+        alum1.nombre=create_form.nombre.data
+        alum1.apaterno=create_form.apaterno.data
+        alum1.amaterno=create_form.amaterno.data
+        alum1.edad=create_form.edad.data
+        alum1.correo=create_form.correo.data
+        db.session.add(alum1)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_template("modificar.html",form=create_form)
 
-    usuarios_clas = forms.UserForm(request.form)
+@app.route('/eliminar',methods=['GET','POST'])
+def eliminar():
+    create_form=forms.UserForm(request.form)
+    if request.method=='GET':
+         id=request.args.get('id')
+         alum1 = db.session.query(Alumnos).filter(Alumnos.id==id).first()
+         create_form.id.data=request.args.get('id')
+         create_form.nombre.data=alum1.nombre
+         create_form.apaterno.data=alum1.apaterno
+         create_form.amaterno.data=alum1.amaterno
+         create_form.edad.data=alum1.edad    
+         create_form.correo.data=alum1.correo
+    if request.method=='POST':
+         id=request.form.get('id')
+         alum = Alumnos.query.get_or_404(id)
+         db.session.delete(alum) 
+         db.session.commit()
+         return redirect(url_for('index'))
+    return render_template('eliminar.html',form=create_form)
 
-    if request.method == 'POST':
-        mat = usuarios_clas.matricula.data
-        nom = usuarios_clas.nombre.data
-        apa = usuarios_clas.apaterno.data
-        ama = usuarios_clas.amaterno.data
-        edad = usuarios_clas.edad.data
-        email = usuarios_clas.correo.data
-
-    return render_template(
-        'usuarios.html',
-        form=usuarios_clas,
-        mat=mat, nom=nom, apa=apa, ama=ama,
-        edad=edad, email=email
-    )
-
-
-# -------------------------------
-# 🔹 MAESTROS
-# -------------------------------
+@app.route("/detalles",methods=['GET','POST'])
+def detalles():
+    create_form=forms.UserForm(request.form)
+    if request.method=='GET':
+         id=request.args.get('id')
+         alum1 = db.session.query(Alumnos).filter(Alumnos.id==id).first()
+         id=request.args.get('id')
+         nombre=alum1.nombre
+         apaterno=alum1.apaterno
+         amaterno=alum1.amaterno
+         edad=alum1.edad     
+         correo=alum1.correo
+         
+    return render_template('detalles.html',id=id,nombre=nombre,apaterno=apaterno,
+                           amaterno=amaterno,edad=edad,correo=correo)
 @app.route("/maestros", methods=["GET","POST"])
 def maestros():
     create_maestro = forms.MaestroForm(request.form)
@@ -81,69 +128,30 @@ def maestros():
     return render_template("index.html", form=create_maestro, maestro=maestro, alumno=alumno)
 
 
-# -------------------------------
-# 🔹 CURSOS (LISTADO)
-# -------------------------------
-@app.route("/cursos")
-def cursos():
-    cursos = Curso.query.all()
-    return render_template("cursos.html", cursos=cursos)
+@app.route("/usuarios",methods=["GET","POST"])
+def usuario():
+    mat=0
+    nom=''
+    apa=''
+    ama=''
+    edad=0
+    email=''
+    usuarios_clas=forms.UserForm(request.form)
+    if request.method=='POST':
+        mat=usuarios_clas.matricula.data
+        nom=usuarios_clas.nombre.data
+        apa=usuarios_clas.apaterno.data
+        ama=usuarios_clas.amaterno.data
+        edad=usuarios_clas.edad.data
+        email=usuarios_clas.correo.data
+    
+    return render_template('usuarios.html',form=usuarios_clas,mat=mat,
+                           nom=nom,apa=apa,ama=ama,edad=edad,email=email)
 
 
-# -------------------------------
-# 🔹 INSCRIBIR ALUMNO A CURSO
-# -------------------------------
-@app.route("/inscribir/<int:alumno_id>/<int:curso_id>")
-def inscribir(alumno_id, curso_id):
-    alumno = Alumnos.query.get(alumno_id)
-    curso = Curso.query.get(curso_id)
 
-    if alumno and curso:
-        curso.alumnos.append(alumno)
-        db.session.commit()
-        flash("Alumno inscrito correctamente")
-    else:
-        flash("Error al inscribir")
-
-    return redirect(url_for('cursos'))
-
-
-# -------------------------------
-# 🔹 CONSULTA: ALUMNOS POR CURSO
-# -------------------------------
-@app.route("/curso/<int:id>")
-def alumnos_por_curso(id):
-    curso = Curso.query.get(id)
-    alumnos = curso.alumnos if curso else []
-    return render_template("curso_detalle.html", curso=curso, alumnos=alumnos)
-
-
-# -------------------------------
-# 🔹 CONSULTA: CURSOS POR ALUMNO
-# -------------------------------
-@app.route("/alumno/<int:id>")
-def cursos_por_alumno(id):
-    alumno = Alumnos.query.get(id)
-    cursos = alumno.cursos if alumno else []
-    return render_template("alumno_detalle.html", alumno=alumno, cursos=cursos)
-
-
-# -------------------------------
-# 🚀 MAIN
-# -------------------------------
 if __name__ == '__main__':
+    csrf.init_app(app)
     with app.app_context():
         db.create_all()
-        
-        # Datos de prueba (maestros)
-        if Maestros.query.count() == 0:
-            maestros_ejemplo = [
-                Maestros(matricula=1001, nombre='Carlos', apellidos='García López', especialidad='Matemáticas', email='carlos.garcia@school.com'),
-                Maestros(matricula=1002, nombre='María', apellidos='Rodríguez Pérez', especialidad='Física', email='maria.rodriguez@school.com'),
-                Maestros(matricula=1003, nombre='Juan', apellidos='Martínez Silva', especialidad='Química', email='juan.martinez@school.com'),
-            ]
-            for mae in maestros_ejemplo:
-                db.session.add(mae)
-            db.session.commit()
-
-    app.run(debug=True)
+    app.run()

@@ -1,4 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy #ORM
 import datetime
 
 db = SQLAlchemy()
@@ -10,25 +10,17 @@ class Alumnos(db.Model):
     apaterno = db.Column(db.String(50), nullable=False)
     amaterno = db.Column(db.String(150), nullable=False)
     edad = db.Column(db.Integer, nullable=False)
-    correo = db.Column(db.String(200), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-
-    cursos = db.relationship(
-        'Curso',
-        secondary='inscripciones',
-        back_populates='alumnos'
-    )
-
+    correo = db.Column(db.String(100), nullable=False)
+    cursos = db.relationship('Curso', secondary='inscripciones', back_populates='alumnos')
 class Maestros(db.Model):
-    __tablename__ = 'maestros'
-    matricula = db.Column(db.Integer, primary_key=True)
-    nombre = db.Column(db.String(50))
-    apellidos = db.Column(db.String(50))
-    especialidad = db.Column(db.String(50))
-    email = db.Column(db.String(50))
-
+    __tablename__='maestros'
+    matricula=db.Column(db.Integer,primary_key=True)
+    nombre=db.Column(db.String(50))
+    apellidos=db.Column(db.String(50))
+    especialidad=db.Column(db.String(50))
+    email=db.Column(db.String(50))
+     
     cursos = db.relationship('Curso', back_populates='maestro')
-
 class Curso(db.Model):
     __tablename__ = 'cursos'
 
@@ -42,13 +34,16 @@ class Curso(db.Model):
         nullable=False
     )
 
-    maestro = db.relationship('Maestros', back_populates='cursos')
+    maestro = db.relationship('Maestros', back_populates='cursos') #db.relationship Es la función 
+    #que define una relación entre modelos en SQLAlchemy.
 
     alumnos = db.relationship(
         'Alumnos',
-        secondary='inscripciones',
-        back_populates='cursos'
+        secondary='inscripciones', # secondary='inscripciones' Esta parte indica que la 
+        #relación es muchos a muchos y que existe una tabla intermedia llamada inscripciones
+        back_populates='cursos' # back_populates='alumnos' Esto crea una relación bidireccional.
     )
+
 
 class Inscripcion(db.Model):
     __tablename__ = 'inscripciones'
