@@ -4,9 +4,9 @@ from flask_wtf.csrf import CSRFProtect
 from config import DevelopmentConfig
 from flask import g
 from flask_migrate import Migrate
-from maestros.routes import maestros_bp
+from maestros import maestros_bp
 
-from models import db, Alumnos
+from models import db, Alumnos, Maestros
 import forms
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
@@ -22,9 +22,9 @@ migrate=Migrate(app, db)
 @app.route("/index")
 def index():
     create_alumno=forms.UserForm(request.form)
-    #select * alumnos alumnos
     alumno=Alumnos.query.all()
-    return render_template("index.html", form=create_alumno, alumno=alumno)
+    maestro=Maestros.query.all()
+    return render_template("index.html", form=create_alumno, alumno=alumno, maestro=maestro)
 
 @app.route("/Alumnos",methods=['GET','POST'])
 def alumnos():
@@ -103,29 +103,6 @@ def detalles():
          
     return render_template('detalles.html',id=id,nombre=nombre,apaterno=apaterno,
                            amaterno=amaterno,edad=edad,correo=correo)
-@app.route("/maestros", methods=["GET","POST"])
-def maestros():
-    create_maestro = forms.MaestroForm(request.form)
-    alumno = Alumnos.query.all()
-    maestro = Maestros.query.all()
-    
-    if request.method == 'POST' and create_maestro.validate():
-        try:
-            nuevo_maestro = Maestros(
-                matricula=create_maestro.matricula.data, 
-                nombre=create_maestro.nombre.data, 
-                apellidos=create_maestro.apellidos.data, 
-                especialidad=create_maestro.especialidad.data, 
-                email=create_maestro.email.data
-            )
-            db.session.add(nuevo_maestro)
-            db.session.commit()
-            flash('Maestro agregado exitosamente')
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error al agregar maestro: {str(e)}')
-    
-    return render_template("index.html", form=create_maestro, maestro=maestro, alumno=alumno)
 
 
 @app.route("/usuarios",methods=["GET","POST"])
