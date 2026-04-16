@@ -31,7 +31,7 @@ class Curso(db.Model):
     maestro_id = db.Column(
         db.Integer,
         db.ForeignKey('maestros.matricula'),
-        nullable=False
+        nullable=True
     )
 
     maestro = db.relationship('Maestros', back_populates='cursos') #db.relationship Es la función 

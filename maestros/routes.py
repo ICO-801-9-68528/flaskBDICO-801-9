@@ -1,10 +1,11 @@
 # Blueprint es para manejarlo como módulos
 from . import maestros_bp
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from models import db
 from models import Maestros
 
 from . import forms
+from sqlalchemy.exc import IntegrityError
 
 
 # Creamos la rutas con maestro en vez de app
@@ -24,9 +25,15 @@ def insertar():
 			apellidos=maestro_Class.apellidos.data,
 			especialidad=maestro_Class.especialidad.data,
 			email=maestro_Class.email.data)
-		db.session.add(mae)
-		db.session.commit()
-		return redirect(url_for('maestros.maestros'))
+		try:
+			db.session.add(mae)
+			db.session.commit()
+			flash('¡Maestro registrado con éxito!', 'success')
+			return redirect(url_for('maestros.maestros'))
+		except IntegrityError:
+			db.session.rollback()
+			flash(f'Error: La matrícula {maestro_Class.matricula.data} ya está ocupada por otro maestro.', 'danger')
+			return redirect(url_for('maestros.insertar'))
 	return render_template("maestros/insertar_maestro.html", form=maestro_Class)
 
 @maestros_bp.route('/detalles', methods=['GET', 'POST'])
@@ -83,3 +90,25 @@ def eliminar():
 		db.session.commit()
 		return redirect(url_for('maestros.maestros'))
 	return render_template("maestros/eliminar_maestro.html", form=maestro_class)
+
+@maestros_bp.route('/asignar_curso', methods=['GET', 'POST'])
+def asignar_curso():
+    from models import Curso
+
+    if request.method == 'POST':
+        curso_id = request.form.get('curso_id')
+        maestro_id = request.form.get('maestro_id')
+
+        curso = Curso.query.get(curso_id)
+        if curso:
+            curso.maestro_id = maestro_id
+            db.session.commit()
+            flash('¡Maestro asignado al curso con éxito!', 'success')
+        else:
+            flash('Curso no encontrado.', 'danger')
+
+        return redirect(url_for('maestros.maestros'))
+
+    cursos = Curso.query.all()
+    maestros = Maestros.query.all()
+    return render_template('maestros/asignar_curso.html', cursos=cursos, maestros=maestros)

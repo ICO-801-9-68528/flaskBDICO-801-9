@@ -32,6 +32,16 @@ def dashboard():
     # Usamos un nombre de función único 'dashboard' para evitar el RecursionError
     return render_template("index.html")
 
+@app.route("/consulta")
+def consulta():
+    # Example data for students and their enrolled courses
+    students = [
+        {"name": "Juan Perez", "courses": ["Math", "Science"]},
+        {"name": "Maria Lopez", "courses": ["History", "Art"]},
+        {"name": "Carlos Gomez", "courses": ["Physics", "Chemistry"]}
+    ]
+    return render_template("consulta.html", students=students)
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()

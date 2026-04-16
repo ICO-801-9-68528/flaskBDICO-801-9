@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block container %}
+<div class="w-full max-w-4xl mx-auto py-10">
+    <h1 class="text-3xl font-extrabold text-gray-800 dark:text-white mb-6">Asignar Maestro a Curso</h1>
+
+    <form method="POST" action="{{ url_for('maestros.asignar_curso') }}">
+        <div class="mb-4">
+            <label for="maestro_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Seleccionar Maestro</label>
+            <select name="maestro_id" id="maestro_id" class="w-full mt-2 p-2 border border-gray-300 rounded-lg">
+                {% for maestro in maestros %}
+                <option value="{{ maestro.matricula }}">{{ maestro.nombre }} {{ maestro.apellidos }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="curso_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Seleccionar Curso</label>
+            <select name="curso_id" id="curso_id" class="w-full mt-2 p-2 border border-gray-300 rounded-lg">
+                {% for curso in cursos %}
+                <option value="{{ curso.id }}">{{ curso.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+            Asignar Maestro
+        </button>
+    </form>
+</div>
+{% endblock %}

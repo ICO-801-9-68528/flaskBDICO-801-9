@@ -12,17 +12,20 @@
     <nav class="bg-gray-900 border-gray-700 dark:bg-gray-900">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
             <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
-                <span class="self-center text-2xl font-semibold whitespace-nowrap text-white">Flask IDGS</span>
+                <img src="/static/img/logo.jpg" alt="Logo" class="h-8 w-8">
+                <span class="self-center text-2xl font-semibold whitespace-nowrap text-white">HOME</span>
             </a>
             <div class="hidden w-full md:block md:w-auto" id="navbar-default">
                 <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-700 rounded-lg bg-gray-800 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-gray-900">
-                    <li><a href="/" class="block py-2 px-3 text-white rounded md:bg-transparent md:text-blue-500 md:p-0">Home</a></li>
-                    <li><a href="#" class="block py-2 px-3 text-gray-400 hover:text-white md:p-0">About</a></li>
-                    <li><a href="#" class="block py-2 px-3 text-gray-400 hover:text-white md:p-0">Services</a></li>
-                    <li><a href="#" class="block py-2 px-3 text-gray-400 hover:text-white md:p-0">Contact</a></li>
+                    <li><a href="/maestros" class="block py-2 px-3 text-gray-400 hover:text-white md:p-0">Maestros</a></li>
+                    <li><a href="/alumnos" class="block py-2 px-3 text-gray-400 hover:text-white md:p-0">Alumnos</a></li>
+                    <li><a href="/cursos" class="block py-2 px-3 text-gray-400 hover:text-white md:p-0">Cursos</a></li>
+                    <li><a href="/inscripciones" class="block py-2 px-3 text-gray-400 hover:text-white md:p-0">Inscripciones</a></li>
                 </ul>
             </div>
-            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium">Get started</button>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium">
+                <a href="/inscripciones">Consulta</a>
+            </button>
         </div>
     </nav>
 

@@ -1,7 +1,8 @@
 from . import alumnos_bp
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, flash
 from models import db, Alumnos
 from . import forms
+from sqlalchemy.exc import IntegrityError
 
 @alumnos_bp.route("", methods=['GET'])
 def lista():
@@ -104,3 +105,28 @@ def usuario():
     
     return render_template('alumnos/usuarios.html',form=usuarios_clas,mat=mat,
                            nom=nom,apa=apa,ama=ama,edad=edad,email=email)
+
+@alumnos_bp.route("/insertar", methods=['GET', 'POST'])
+def insertar():
+    if request.method == 'POST':
+        nueva_matricula = request.form.get('matricula')
+        
+        nuevo_maestro = Alumnos(
+            matricula=nueva_matricula,
+            nombre=request.form.get('nombre'),
+            apellidos=request.form.get('apellidos'),
+            especialidad=request.form.get('especialidad'),
+            email=request.form.get('email')
+        )
+        
+        try:
+            db.session.add(nuevo_maestro)
+            db.session.commit()
+            flash('¡Maestro registrado con éxito!', 'success')
+            return redirect(url_for('alumnos.lista'))
+        except IntegrityError:
+            db.session.rollback() # Importante para limpiar la sesión fallida
+            flash(f'Error: La matrícula {nueva_matricula} ya está ocupada por otro maestro.', 'danger')
+            return redirect(url_for('alumnos.insertar')) # Regresa al formulario
+
+    return render_template('alumnos/insertar.html')

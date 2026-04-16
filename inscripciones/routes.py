@@ -4,11 +4,18 @@ from models import db, Inscripcion, Alumnos, Curso
 
 @inscripciones_bp.route("", methods=['GET'])
 def lista():
-    # Join con alumnos y cursos para obtener los detalles visuales
-    records = db.session.query(Inscripcion, Alumnos, Curso)\
-        .join(Alumnos, Alumnos.id == Inscripcion.alumno_id)\
-        .join(Curso, Curso.id == Inscripcion.curso_id).all()
-    
+    search_query = request.args.get('search', '')
+    query = db.session.query(Inscripcion, Alumnos, Curso)
+    query = query.join(Alumnos, Alumnos.id == Inscripcion.alumno_id)
+    query = query.join(Curso, Curso.id == Inscripcion.curso_id)
+
+    if search_query:
+        query = query.filter(
+            (Alumnos.nombre.ilike(f"%{search_query}%")) |
+            (Curso.nombre.ilike(f"%{search_query}%"))
+        )
+
+    records = query.all()
     return render_template("inscripciones/lista.html", records=records)
 
 @inscripciones_bp.route("/insertar", methods=['GET', 'POST'])
