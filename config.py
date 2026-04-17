@@ -8,5 +8,6 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://leonardo:rootwan@127.0.0.1/ico801'
+    # Usar PyMySQL (está instalado en el entorno virtual) como driver de MySQL
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://leonardo:rootwan@127.0.0.1/ico801'
     SQLALCHEMY_TRACK_MODIFICATIONS = False  

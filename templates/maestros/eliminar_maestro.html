@@ -24,6 +24,27 @@
       {{ macros.camposNuevos(form.email, class="mb-0.5 text-xl font-semibold tracking-tight text-heading") }}
     </div>
 
+    <div class="relative z-0 w-full mb-5 group">
+      {% if cursos_count and cursos_count > 0 %}
+        <p class="text-yellow-600 mb-2">Este maestro tiene <strong>{{ cursos_count }}</strong> curso(s) asignado(s). Reasigna o elimina los cursos antes de continuar.</p>
+      {% endif %}
+
+      <label for="nuevo_maestro_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Selecciona un nuevo maestro para los cursos (opcional):</label>
+      <select name="nuevo_maestro_id" id="nuevo_maestro_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+        <option value="">-- Ninguno --</option>
+        {% for maestro in maestros_disponibles %}
+          <option value="{{ maestro.matricula }}">{{ maestro.nombre }} {{ maestro.apellidos }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="relative z-0 w-full mb-5 group">
+      <label class="inline-flex items-center">
+        <input type="checkbox" name="delete_courses" id="delete_courses" class="form-checkbox h-4 w-4 text-red-600">
+        <span class="ml-2 text-sm text-gray-700">Eliminar los cursos asociados en lugar de reasignarlos</span>
+      </label>
+    </div>
+
     <div class="grid md:grid-cols-2 md:gap-6">
       <input
         type="submit"
@@ -44,5 +65,20 @@
     </div>
   </form>
 </div>
+
+<script>
+// Prevent submit when there are courses and neither reassign nor delete is selected
+document.querySelector('form').addEventListener('submit', function(e){
+  const cursosCount = {{ cursos_count|default(0) }};
+  if(cursosCount > 0){
+    const nuevo = document.getElementById('nuevo_maestro_id').value;
+    const del = document.getElementById('delete_courses').checked;
+    if(!nuevo && !del){
+      e.preventDefault();
+      alert('El maestro tiene cursos. Seleccione un nuevo maestro o marque "Eliminar los cursos asociados".');
+    }
+  }
+});
+</script>
 
 {% endblock %}
