@@ -1,0 +1,7 @@
+# Ignore local DB dumps
+dumps/*.sql
+# Allow project backup files named backup_YYYY-MM-DD.sql
+!dumps/backup_*.sql
+
+# Keep schema.sql tracked
+!schema.sql
